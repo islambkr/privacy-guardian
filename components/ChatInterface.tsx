@@ -12,7 +12,11 @@ export default function ChatInterface({ platformNames }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: `Hi! I'm your Privacy Guardian AI. Ask me anything about privacy on ${platformNames.join(', ')}.`,
+      content: `Hi! I'm your Privacy Guardian AI. I help you understand and improve privacy settings on ${platformNames.join(', ')}.
+
+⚠️ Note: I have a knowledge cutoff of April 2024. Privacy policies and app features update frequently, so please verify critical settings on the official apps.
+
+What would you like to know about privacy?`,
     },
   ]);
   const [input, setInput] = useState('');
