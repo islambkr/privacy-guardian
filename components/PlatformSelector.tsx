@@ -54,52 +54,29 @@ export default function PlatformSelector() {
         return;
       }
 
-      const { error: insertError } = await supabase.from('app_user').insert([
-        {
-          user_id: session.id,
+      const response = await fetch('/api/save-platforms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authSession.access_token}`,
+        },
+        body: JSON.stringify({
+          userId: session.id,
           name: session.name,
           email: session.email,
-        },
-      ]);
+          platformIds: selected,
+        }),
+      });
 
-      if (insertError && insertError.code !== '23505') {
-        console.error('[platforms] app_user insert failed:', insertError);
-        throw insertError;
-      }
-
-      for (const platformId of selected) {
-        const { error: platformError } = await supabase.from('user_platform').insert([
-          {
-            user_id: session.id,
-            platform_id: platformId,
-            is_enabled: true,
-          },
-        ]);
-        if (platformError && platformError.code !== '23505') {
-          console.error(`[platforms] user_platform insert failed for platform ${platformId}:`, platformError);
-          throw platformError;
-        }
-      }
-
-      const { error: settingsError } = await supabase
-        .from('notification_settings')
-        .insert([
-          {
-            user_id: session.id,
-            privacy_alerts_enabled: true,
-            weekly_digest_enabled: false,
-          },
-        ]);
-
-      if (settingsError && settingsError.code !== '23505') {
-        console.error('[platforms] notification_settings insert failed:', settingsError);
-        throw settingsError;
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Server error');
       }
 
       router.push('/home');
     } catch (err) {
       console.error('Error saving platforms:', err);
-      setError('Failed to save platforms. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to save platforms. Please try again.');
       setLoading(false);
     }
   };
